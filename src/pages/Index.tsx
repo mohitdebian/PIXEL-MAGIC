@@ -13,15 +13,33 @@ const Index: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [apiKey, setApiKey] = useState<string>('');
+  const [isApiKeySet, setIsApiKeySet] = useState<boolean>(false);
 
-  // Initialize Together client when API key changes
+  // Initialize Together client with environment variable or user input
   useEffect(() => {
-    if (apiKey) {
+    const envApiKey = import.meta.env.VITE_TOGETHER_API_KEY;
+    
+    // If environment variable exists, use it directly
+    if (envApiKey) {
+      try {
+        initializeTogether(envApiKey);
+        setApiKey(envApiKey);
+        setIsApiKeySet(true);
+        console.log("Using API key from environment variable");
+      } catch (error) {
+        console.error("Error initializing Together client:", error);
+        toast.error("Invalid API key in environment variable");
+      }
+    }
+    // Otherwise use provided API key from input
+    else if (apiKey) {
       try {
         initializeTogether(apiKey);
+        setIsApiKeySet(true);
       } catch (error) {
         console.error("Error initializing Together client:", error);
         toast.error("Invalid API key format");
+        setIsApiKeySet(false);
       }
     }
   }, [apiKey]);
@@ -40,8 +58,8 @@ const Index: React.FC = () => {
       return;
     }
 
-    if (!apiKey) {
-      toast.error('Please enter your Together AI API key first');
+    if (!isApiKeySet) {
+      toast.error('Please enter your Together AI API key first or set VITE_TOGETHER_API_KEY environment variable');
       return;
     }
 
@@ -94,7 +112,7 @@ const Index: React.FC = () => {
                     <div>
                       <GenerateButton 
                         onClick={handleGenerate}
-                        disabled={!prompt.trim() || !apiKey}
+                        disabled={!prompt.trim() || !isApiKeySet}
                         isLoading={isGenerating}
                       />
                     </div>

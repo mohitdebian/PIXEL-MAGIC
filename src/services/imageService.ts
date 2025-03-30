@@ -2,11 +2,16 @@
 import Together from "together-ai";
 import axios from "axios";
 
-// Initialize Together client - we'll pass the API key from the component
+// Initialize Together client with environment variable if available
 let together: Together | null = null;
 
 export function initializeTogether(apiKey: string) {
-  together = new Together({ apiKey });
+  // Try to use the provided API key or fall back to environment variable (if set)
+  const key = apiKey || import.meta.env.VITE_TOGETHER_API_KEY;
+  if (!key) {
+    throw new Error("API key is required");
+  }
+  together = new Together({ apiKey: key });
   return together;
 }
 

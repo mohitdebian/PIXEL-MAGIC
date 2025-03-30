@@ -11,18 +11,20 @@ interface ApiKeyInputProps {
 
 const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
   const [apiKey, setApiKey] = useState<string>("");
-  const [showInput, setShowInput] = useState<boolean>(false);
+  const [showInput, setShowInput] = useState<boolean>(true);
   const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isUsingEnvVar, setIsUsingEnvVar] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check if API key exists in localStorage
-    const savedApiKey = localStorage.getItem('togetherApiKey');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      onApiKeyChange(savedApiKey);
+    // Check if API key exists in environment variables
+    const envApiKey = import.meta.env.VITE_TOGETHER_API_KEY;
+    
+    if (envApiKey) {
+      setApiKey(envApiKey);
+      onApiKeyChange(envApiKey);
       setIsSaved(true);
-    } else {
-      setShowInput(true);
+      setShowInput(false);
+      setIsUsingEnvVar(true);
     }
   }, [onApiKeyChange]);
 
@@ -32,7 +34,6 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
       return;
     }
     
-    localStorage.setItem('togetherApiKey', apiKey);
     onApiKeyChange(apiKey);
     setIsSaved(true);
     setShowInput(false);
@@ -40,8 +41,9 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
   };
 
   const handleReset = () => {
-    localStorage.removeItem('togetherApiKey');
-    setApiKey('');
+    if (!isUsingEnvVar) {
+      setApiKey('');
+    }
     setIsSaved(false);
     setShowInput(true);
     onApiKeyChange('');
@@ -52,15 +54,21 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
     return (
       <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 text-green-500 rounded-lg my-4">
         <Check size={16} />
-        <span className="text-sm">API key set</span>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => setShowInput(true)}
-          className="ml-auto text-xs h-7"
-        >
-          Change
-        </Button>
+        <span className="text-sm">
+          {isUsingEnvVar 
+            ? "Using API key from environment variable" 
+            : "API key set"}
+        </span>
+        {!isUsingEnvVar && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowInput(true)}
+            className="ml-auto text-xs h-7"
+          >
+            Change
+          </Button>
+        )}
       </div>
     );
   }
@@ -74,35 +82,43 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
       
       <div className="mb-2 text-xs text-muted-foreground">
         <p>You need a Together AI API key to generate images.</p>
-        <a 
-          href="https://www.together.ai/api" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-primary underline"
-        >
-          Get an API key here
-        </a>
-      </div>
-
-      <div className="flex gap-2">
-        <Input
-          type="password"
-          value={apiKey}
-          onChange={(e) => setApiKey(e.target.value)}
-          placeholder="Enter your Together AI API key"
-          className="flex-1"
-        />
-        <Button onClick={handleSaveApiKey} size="sm">
-          Save
-        </Button>
-        {isSaved && (
-          <Button onClick={handleReset} variant="outline" size="sm">
-            Reset
-          </Button>
+        {!isUsingEnvVar && (
+          <>
+            <p className="mt-1">For better security, set the VITE_TOGETHER_API_KEY environment variable.</p>
+            <a 
+              href="https://www.together.ai/api" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              Get an API key here
+            </a>
+          </>
         )}
       </div>
 
-      {!apiKey && showInput && (
+      {!isUsingEnvVar && (
+        <div className="flex gap-2">
+          <Input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Enter your Together AI API key"
+            className="flex-1"
+            disabled={isUsingEnvVar}
+          />
+          <Button onClick={handleSaveApiKey} size="sm" disabled={isUsingEnvVar}>
+            Save
+          </Button>
+          {isSaved && (
+            <Button onClick={handleReset} variant="outline" size="sm">
+              Reset
+            </Button>
+          )}
+        </div>
+      )}
+
+      {!apiKey && showInput && !isUsingEnvVar && (
         <div className="flex items-center gap-2 mt-2 text-amber-500 text-xs">
           <AlertCircle size={14} />
           <span>API key is required to generate images</span>
