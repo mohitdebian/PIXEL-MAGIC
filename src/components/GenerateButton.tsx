@@ -24,6 +24,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
         text-white transition-all duration-500 ease-in-out
         shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_25px_rgba(139,92,246,0.5)]
         disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+      title={disabled ? "Enter a prompt and API key first" : "Generate image"}
     >
       <span className="relative z-10 flex items-center justify-center gap-2">
         {isLoading ? (

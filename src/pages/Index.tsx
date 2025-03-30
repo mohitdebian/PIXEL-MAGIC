@@ -1,47 +1,34 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PromptInput from '@/components/PromptInput';
 import GenerateButton from '@/components/GenerateButton';
 import ImageGrid from '@/components/ImageGrid';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ApiKeyInput from '@/components/ApiKeyInput';
 import { toast } from "sonner";
-import { Sparkles, Wand2, Image as ImageIcon, Stars, ArrowRight } from 'lucide-react';
-
-// Mock function to simulate image generation
-// In a real implementation, this would call an AI image API
-const mockGenerateImage = (prompt: string): Promise<{id: string, url: string, prompt: string}> => {
-  return new Promise((resolve) => {
-    // Simulate API call delay
-    setTimeout(() => {
-      const randomId = Math.random().toString(36).substring(2, 15);
-      
-      // For demo purpose, using placeholder images
-      const placeholderUrls = [
-        'https://images.unsplash.com/photo-1557682250-0ef193361e31',
-        'https://images.unsplash.com/photo-1513151233558-d860c5398176',
-        'https://images.unsplash.com/photo-1600132806370-bf17e65e942f',
-        'https://images.unsplash.com/photo-1614728263952-84ea256f9679',
-        'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe',
-      ];
-      
-      const randomImageUrl = placeholderUrls[Math.floor(Math.random() * placeholderUrls.length)];
-      
-      resolve({
-        id: randomId,
-        url: `${randomImageUrl}?q=${randomId}`,
-        prompt: prompt,
-      });
-    }, 1500); // Simulate 1.5 second delay
-  });
-};
+import { generateImage, GeneratedImage } from '@/services/imageService';
+import { Sparkles, Wand2, Image as ImageIcon, Stars } from 'lucide-react';
+import Together from "together-ai";
 
 const Index: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [images, setImages] = useState<Array<{id: string, url: string, prompt: string}>>([]);
+  const [images, setImages] = useState<GeneratedImage[]>([]);
+  const [apiKey, setApiKey] = useState<string>('');
+
+  // Set API key for Together client
+  useEffect(() => {
+    if (apiKey) {
+      window.Together = new Together(apiKey);
+    }
+  }, [apiKey]);
 
   const handlePromptChange = (newPrompt: string) => {
     setPrompt(newPrompt);
+  };
+
+  const handleApiKeyChange = (newApiKey: string) => {
+    setApiKey(newApiKey);
   };
 
   const handleGenerate = async () => {
@@ -50,14 +37,19 @@ const Index: React.FC = () => {
       return;
     }
 
+    if (!apiKey) {
+      toast.error('Please enter your Together AI API key first');
+      return;
+    }
+
     setIsGenerating(true);
     
     try {
-      const newImage = await mockGenerateImage(prompt);
+      const newImage = await generateImage(prompt);
       setImages(prevImages => [newImage, ...prevImages]);
       toast.success('Image generated successfully!');
     } catch (error) {
-      toast.error('Failed to generate image. Please try again.');
+      toast.error('Failed to generate image. Please check your API key and try again.');
       console.error('Error generating image:', error);
     } finally {
       setIsGenerating(false);
@@ -83,11 +75,12 @@ const Index: React.FC = () => {
           </p>
           
           <div className="flex flex-col gap-4 items-center mt-8 animate-fade-in">
-            <div className="relative">
+            <div className="relative w-full max-w-3xl">
               <Sparkles className="absolute -top-6 -right-6 text-violet-500 animate-pulse w-12 h-12 opacity-70" />
               <Wand2 className="absolute -bottom-6 -left-6 text-indigo-500 animate-pulse w-12 h-12 opacity-70" />
               <div className="glass-card p-1 rounded-xl border border-violet-500/20 shadow-lg shadow-violet-500/10">
-                <div className="w-full max-w-3xl mx-auto">
+                <div className="w-full mx-auto">
+                  <ApiKeyInput onApiKeyChange={handleApiKeyChange} />
                   <div className="flex flex-col md:flex-row gap-4 items-center p-4 rounded-xl animate-fade-in">
                     <div className="flex-1 w-full">
                       <PromptInput 
@@ -98,7 +91,7 @@ const Index: React.FC = () => {
                     <div>
                       <GenerateButton 
                         onClick={handleGenerate}
-                        disabled={!prompt.trim()}
+                        disabled={!prompt.trim() || !apiKey}
                         isLoading={isGenerating}
                       />
                     </div>
