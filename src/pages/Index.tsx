@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import PromptInput from '@/components/PromptInput';
 import GenerateButton from '@/components/GenerateButton';
@@ -6,9 +5,8 @@ import ImageGrid from '@/components/ImageGrid';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ApiKeyInput from '@/components/ApiKeyInput';
 import { toast } from "sonner";
-import { generateImage, GeneratedImage } from '@/services/imageService';
+import { generateImage, GeneratedImage, initializeTogether } from '@/services/imageService';
 import { Sparkles, Wand2, Image as ImageIcon, Stars } from 'lucide-react';
-import Together from "together-ai";
 
 const Index: React.FC = () => {
   const [prompt, setPrompt] = useState('');
@@ -16,10 +14,15 @@ const Index: React.FC = () => {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [apiKey, setApiKey] = useState<string>('');
 
-  // Set API key for Together client
+  // Initialize Together client when API key changes
   useEffect(() => {
     if (apiKey) {
-      window.Together = new Together(apiKey);
+      try {
+        initializeTogether(apiKey);
+      } catch (error) {
+        console.error("Error initializing Together client:", error);
+        toast.error("Invalid API key format");
+      }
     }
   }, [apiKey]);
 

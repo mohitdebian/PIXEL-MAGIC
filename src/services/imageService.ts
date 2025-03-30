@@ -2,8 +2,13 @@
 import Together from "together-ai";
 import axios from "axios";
 
-// Initialize Together client
-const together = new Together(import.meta.env.VITE_TOGETHER_API_KEY || "");
+// Initialize Together client - we'll pass the API key from the component
+let together: Together | null = null;
+
+export function initializeTogether(apiKey: string) {
+  together = new Together({ apiKey });
+  return together;
+}
 
 export interface GeneratedImage {
   id: string;
@@ -13,6 +18,10 @@ export interface GeneratedImage {
 
 export async function generateImage(prompt: string): Promise<GeneratedImage> {
   try {
+    if (!together) {
+      throw new Error("API client is not initialized. Please provide an API key first.");
+    }
+
     const response = await together.images.create({
       model: "black-forest-labs/FLUX.1-schnell-Free",
       prompt: prompt,
