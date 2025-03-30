@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from 'lucide-react';
+import { Sparkles, RefreshCw } from 'lucide-react';
 
 interface GenerateButtonProps {
   onClick: () => void;
@@ -32,7 +32,10 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
             <span>Generating...</span>
           </>
         ) : (
-          <span>Generate</span>
+          <>
+            <Sparkles className="h-5 w-5 animate-pulse" />
+            <span>Generate</span>
+          </>
         )}
       </span>
       <span className="absolute inset-0 opacity-0 group-hover:opacity-25 bg-gradient-to-r from-white/20 via-white/0 to-white/0 transition-opacity"></span>

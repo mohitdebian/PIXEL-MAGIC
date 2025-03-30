@@ -20,7 +20,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = 'medium' }) => {
         <div className={`${sizeClasses[size]} rounded-full border-4 border-transparent border-t-primary animate-spin`}></div>
       </div>
       <div className="mt-4 bg-gradient-to-r from-violet-500 to-indigo-500 bg-clip-text text-transparent font-medium animate-pulse">
-        AI Working
+        Creating Magic
       </div>
     </div>
   );
