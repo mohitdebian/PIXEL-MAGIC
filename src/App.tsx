@@ -8,6 +8,7 @@ import { UserAvatar } from "./components/UserAvatar";
 import { onAuthStateChange } from "./services/auth";
 import { AuthModal } from "./components/AuthModal";
 import { LogIn, Sparkles } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => {
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}
         />
+        <Analytics />
       </TooltipProvider>
     </QueryClientProvider>
   );

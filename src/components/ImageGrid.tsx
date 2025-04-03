@@ -32,7 +32,7 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images, isLoading }) => {
       {images.map((image, index) => (
         <div 
           key={image.id} 
-          className="overflow-hidden rounded-xl glass-card group hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 animate-fade-in"
+          className="overflow-hidden rounded-xl glass-card group hover:shadow-xl hover:shadow-primary/10 transition-all duration-500 animate-fade-in flex flex-col"
           style={{ animationDelay: `${index * 150}ms` }}
         >
           <div className="relative aspect-square overflow-hidden">
@@ -65,9 +65,10 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images, isLoading }) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
-          <div className="p-4">
-            <p className="text-sm text-muted-foreground group-hover:text-primary/80 transition-colors duration-300 line-clamp-2">
-              {image.prompt}
+          <div className="p-4 bg-[#121212] border-t border-blue-900/20 flex-grow">
+            <p className="text-sm transition-colors duration-300">
+              <span className="font-semibold text-blue-400">Prompt:- </span>
+              <span className="text-gray-300 group-hover:text-white line-clamp-2 group-hover:line-clamp-none transition-all duration-300">{image.prompt}</span>
             </p>
           </div>
         </div>
