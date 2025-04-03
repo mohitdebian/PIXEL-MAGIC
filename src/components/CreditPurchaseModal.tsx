@@ -25,6 +25,13 @@ declare global {
 // Razorpay API credentials
 const RAZORPAY_KEY_ID = "rzp_test_BRLNwkXJVOGoQE";
 
+// Exchange rate: INR to USD (as of current date)
+const INR_TO_USD_RATE = 0.012; // 1 INR = 0.012 USD (approximately)
+
+const convertInrToUsd = (inrAmount: number): number => {
+  return parseFloat((inrAmount * INR_TO_USD_RATE).toFixed(4));
+};
+
 export const CreditPurchaseModal = ({ isOpen, onClose, userId }: CreditPurchaseModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<number | null>(null);
@@ -53,8 +60,8 @@ export const CreditPurchaseModal = ({ isOpen, onClose, userId }: CreditPurchaseM
         key: RAZORPAY_KEY_ID,
         amount: price * 100, // Amount in paise
         currency: "INR",
-        name: "Image Generation Credits",
-        description: `Purchase ${amount} credits`,
+        name: "Pixel Magic Credits",
+        description: `Purchase ${amount} credits (₹${price} | $${convertInrToUsd(price)})`,
         handler: async function(response: any) {
           if (response.razorpay_payment_id) {
             // Process the credit purchase after successful payment
@@ -73,6 +80,9 @@ export const CreditPurchaseModal = ({ isOpen, onClose, userId }: CreditPurchaseM
         },
         theme: {
           color: "#3B82F6"
+        },
+        notes: {
+          currency_conversion: `Equivalent to $${convertInrToUsd(price)} USD`
         }
       };
       
@@ -91,52 +101,63 @@ export const CreditPurchaseModal = ({ isOpen, onClose, userId }: CreditPurchaseM
 
   const getValueText = (amount: number, price: number) => {
     const pricePerCredit = price / amount;
-    if (amount === 100) return "Basic";
-    if (amount === 500) return "Best Value";
-    if (amount === 1000) return "Pro Pack";
-    return `${(pricePerCredit * 100).toFixed(1)}₹ per credit`;
+    
+    if (amount === 100) return `Basic`;
+    if (amount === 500) return `Best Value`;
+    if (amount === 1000) return `Pro Pack`;
+    
+    return `₹${(pricePerCredit).toFixed(2)} | $${convertInrToUsd(pricePerCredit).toFixed(4)} per credit`;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#1a1a1a] border-[#2d2d2d] max-w-md">
-        <DialogHeader className="text-center pb-2">
-          <DialogTitle className="text-white text-2xl font-bold">Power Up Your Creativity</DialogTitle>
-          <DialogDescription className="text-gray-400 text-base mt-2">
+      <DialogContent className="bg-[#1a1a1a] border-[#2d2d2d] max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="text-center pb-1">
+          <DialogTitle className="text-white text-xl font-bold">Power Up Your Creativity</DialogTitle>
+          <DialogDescription className="text-gray-400 text-sm mt-1">
             Purchase credits to generate more amazing images
           </DialogDescription>
         </DialogHeader>
         
-        <div className="grid gap-4 py-6">
+        <div className="grid gap-3 py-3">
           {CREDIT_PACKAGES.map((pkg) => (
             <div
               key={pkg.amount}
-              className={`relative rounded-xl border transition-all duration-300 overflow-hidden ${
+              className={`relative rounded-lg border transition-all duration-300 overflow-hidden ${
                 pkg.popular 
-                  ? 'border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                  ? 'border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' 
                   : 'border-[#2d2d2d] hover:border-blue-500/50'
               }`}
             >
               {pkg.popular && (
-                <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-bl-lg">
-                  MOST POPULAR
+                <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-medium px-2 py-0.5 rounded-bl-lg">
+                  POPULAR
                 </div>
               )}
               
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center">
-                    <span className="text-3xl mr-3">{pkg.icon}</span>
+                    <span className="text-2xl mr-2">{pkg.icon}</span>
                     <div>
-                      <h3 className="text-white font-bold text-xl">{pkg.amount} Credits</h3>
-                      <p className="text-blue-400 text-sm">{getValueText(pkg.amount, pkg.price)}</p>
+                      <h3 className="text-white font-bold text-lg">{pkg.amount} Credits</h3>
+                      <p className="text-blue-400 text-xs">{getValueText(pkg.amount, pkg.price)}</p>
+                      <p className="text-gray-300 text-xs">
+                        ₹{(pkg.price / pkg.amount).toFixed(2)} | ${(convertInrToUsd(pkg.price / pkg.amount)).toFixed(4)} per credit
+                      </p>
                     </div>
                   </div>
-                  <div className="text-white text-2xl font-bold">₹{pkg.price}</div>
+                  <div className="text-white text-xl font-bold">
+                    <div className="flex items-center gap-1">
+                      <span>₹{pkg.price}</span>
+                      <span className="text-white">|</span>
+                      <span>${convertInrToUsd(pkg.price).toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
                 
                 <Button 
-                  className={`w-full py-5 text-white font-medium text-base ${
+                  className={`w-full py-2 text-white font-medium text-sm ${
                     pkg.popular 
                       ? 'bg-blue-600 hover:bg-blue-700' 
                       : 'bg-[#2d2d2d] hover:bg-[#3d3d3d]'
@@ -146,7 +167,7 @@ export const CreditPurchaseModal = ({ isOpen, onClose, userId }: CreditPurchaseM
                 >
                   {isLoading && selectedPackage === pkg.amount ? (
                     <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -161,10 +182,10 @@ export const CreditPurchaseModal = ({ isOpen, onClose, userId }: CreditPurchaseM
           ))}
         </div>
         
-        <div className="mt-2 text-center text-xs text-gray-500">
-          Secure payments powered by Razorpay. Credits will be added instantly to your account.
+        <div className="mt-1 text-center text-xs text-gray-500">
+          Secure payments powered by Razorpay.
         </div>
       </DialogContent>
     </Dialog>
   );
-}; 
+};
