@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Image } from 'lucide-react';
 
@@ -37,6 +36,28 @@ const ImageGrid: React.FC<ImageGridProps> = ({ images, isLoading }) => {
           style={{ animationDelay: `${index * 150}ms` }}
         >
           <div className="relative aspect-square overflow-hidden">
+            <div className="absolute top-2 right-2 z-10">
+              <button 
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: 'Generated Image',
+                      url: image.url
+                    })
+                    .catch(console.error);
+                  } else {
+                    // Fallback for browsers that don't support Web Share API
+                    window.open(image.url, '_blank');
+                  }
+                }}
+                className="p-1.5 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors duration-200"
+                title="Share image"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-white">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                </svg>
+              </button>
+            </div>
             <img 
               src={image.url} 
               alt={image.prompt} 

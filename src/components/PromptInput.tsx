@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Search } from 'lucide-react';
@@ -20,12 +19,12 @@ const PromptInput: React.FC<PromptInputProps> = ({ onPromptChange, disabled }) =
 
   return (
     <div className="w-full relative">
-      <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-all duration-300 ${prompt ? 'opacity-0' : 'opacity-100'}`}>
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
         <Search className="w-5 h-5" />
       </div>
       <Input
         type="text"
-        placeholder="Describe the image you want to generate..."
+        placeholder="Describe the image you want..."
         value={prompt}
         onChange={handleInputChange}
         disabled={disabled}
